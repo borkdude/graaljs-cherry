@@ -3,6 +3,8 @@
   resulting JS in an embedded GraalJS context."
   (:require
    [cherry.compiler :as compiler]
+   [clojure.data.json :as json]
+   [clojure.java.io :as io]
    [clojure.string :as str])
   (:import
    (java.net URI)
@@ -26,9 +28,50 @@
 (defn- bare-specifier? [^String path]
   (not (or (str/starts-with? path "/")
            (str/starts-with? path "./")
-           (str/starts-with? path "../")
-           ;; single-segment paths like "foo" are relative files, not packages
-           (not (str/includes? path "/")))))
+           (str/starts-with? path "../"))))
+
+(defn- exports-target
+  "Resolve a package.json exports value to a package-relative file path."
+  [exports subpath]
+  (let [subkey (if subpath (str "./" subpath) ".")
+        node (if (and (map? exports)
+                      (some #(str/starts-with? % ".") (keys exports)))
+               (get exports subkey)
+               (when-not subpath exports))]
+    (loop [node node]
+      (cond
+        (string? node) node
+        (map? node) (recur (or (get node "import")
+                               (get node "module")
+                               (get node "node")
+                               (get node "default")))
+        :else nil))))
+
+(defn- resolve-specifier
+  "Node-ish resolution of a bare import specifier against node_modules:
+  literal file, then package.json exports/module/main, then index.js.
+  ESM packages only."
+  ^String [^String spec]
+  (let [nm (node-modules-dir)
+        direct (io/file nm spec)]
+    (if (.isFile direct)
+      (.getPath direct)
+      (let [segs (str/split spec #"/")
+            npkg (if (str/starts-with? spec "@") 2 1)
+            pkg-dir (io/file nm (str/join "/" (take npkg segs)))
+            subpath (not-empty (str/join "/" (drop npkg segs)))
+            pj-file (io/file pkg-dir "package.json")
+            pj (when (.isFile pj-file)
+                 (try (json/read-str (slurp pj-file))
+                      (catch Exception _ nil)))
+            entry (or (exports-target (get pj "exports") subpath)
+                      (when subpath
+                        (cond
+                          (.isFile (io/file pkg-dir (str subpath ".js"))) (str subpath ".js")
+                          (.isDirectory (io/file pkg-dir subpath)) (str subpath "/index.js")))
+                      (when-not subpath
+                        (or (get pj "module") (get pj "main"))))]
+        (.getPath (io/file pkg-dir (or entry "index.js")))))))
 
 (defn- module-fs ^FileSystem []
   (let [delegate (FileSystem/newDefaultFileSystem)]
@@ -36,7 +79,7 @@
       (^java.nio.file.Path parsePath [_ ^String path]
         (.parsePath delegate
                     (if (bare-specifier? path)
-                      (str (node-modules-dir) "/" path)
+                      (resolve-specifier path)
                       path)))
       (^java.nio.file.Path parsePath [_ ^URI uri]
         (.parsePath delegate uri))

@@ -1,5 +1,7 @@
 {
   "dependencies": {
-    "cherry-cljs": "^0.6.35"
+    "camelcase": "^9.0.0",
+    "cherry-cljs": "^0.6.35",
+    "nanoid": "^6.0.1"
   }
 }

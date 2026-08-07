@@ -1,0 +1,67 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      camelcase:
+        specifier: ^9.0.0
+        version: 9.0.0
+      cherry-cljs:
+        specifier: ^0.6.35
+        version: 0.6.35
+      nanoid:
+        specifier: ^6.0.1
+        version: 6.0.1
+
+packages:
+
+  camelcase@9.0.0:
+    resolution: {integrity: sha512-TO9xmyXTZ9HUHI8M1OnvExxYB0eYVS/1e5s7IDMTAoIcwUd+aNcFODs6Xk83mobk0velyHFQgA1yIrvYc6wclw==}
+    engines: {node: '>=20'}
+
+  cherry-cljs@0.6.35:
+    resolution: {integrity: sha512-hm/uQ4h7pCiqTOBFcVZD58G9ofMe3wwhcIWK999ZgU5xhlDKj6ZekS7PyupX+SxGpoTKF4o8z04RJafrY/KL6g==}
+    hasBin: true
+
+  chokidar@4.0.3:
+    resolution: {integrity: sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA==}
+    engines: {node: '>= 14.16.0'}
+
+  nanoid@6.0.1:
+    resolution: {integrity: sha512-3wVS3i51pE2pi1k5FFL/95BGfVS0kSsvDVuGXHOtxox/TywUmtgq+3qiTOTbs9J7KfHaXPiN171k/A6dBnaXFw==}
+    engines: {node: ^22 || ^24 || >=26}
+    hasBin: true
+
+  readdirp@4.1.2:
+    resolution: {integrity: sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==}
+    engines: {node: '>= 14.18.0'}
+
+  squint-cljs@0.14.206:
+    resolution: {integrity: sha512-por3ytiUKedGkdZsD9E3TvOo/txPbfhqpYl/VsyIzNPG+LjazUavFaCwTv3zSQ/eT7FpsdwVdhQuPSaUePjgoA==}
+    hasBin: true
+
+snapshots:
+
+  camelcase@9.0.0: {}
+
+  cherry-cljs@0.6.35:
+    dependencies:
+      chokidar: 4.0.3
+      squint-cljs: 0.14.206
+
+  chokidar@4.0.3:
+    dependencies:
+      readdirp: 4.1.2
+
+  nanoid@6.0.1: {}
+
+  readdirp@4.1.2: {}
+
+  squint-cljs@0.14.206:
+    dependencies:
+      chokidar: 4.0.3

@@ -40,6 +40,23 @@ user=> (s/join ", " (map inc [1 2 3]))
 "2, 3, 4"
 ```
 
+## npm libraries
+
+ESM packages from `node_modules` can be required by their import specifier:
+
+```
+user=> (require '["nanoid/non-secure" :as n])
+nil
+user=> (n/nanoid)
+"pHu9wiXQ7Mj99r0RSiXOW"
+```
+
+Install packages with npm or pnpm. The module loader resolves package.json
+`exports`, `module` and `main` entries. CommonJS-only packages and packages
+that use Node.js built-ins (`Buffer`, `node:crypto`, ...) do not work:
+GraalJS provides no Node APIs. With pnpm, packages that import their own
+dependencies need `pnpm install --config.node-linker=hoisted`.
+
 ## How it works
 
 Each REPL input is compiled with `cherry.compiler/compile-string*` in
