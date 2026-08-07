@@ -1,0 +1,9 @@
+{:paths ["src"]
+ :deps {org.clojure/clojure {:mvn/version "1.12.3"}
+        io.github.squint-cljs/cherry {:git/sha "585c2fd164314c649344bd4a0eda4c078b2923e1"}
+        org.graalvm.js/js-language {:mvn/version "25.0.2"}
+        org.graalvm.truffle/truffle-runtime {:mvn/version "25.0.2"}}
+ :aliases
+ {:native {:extra-paths ["classes"]
+           :extra-deps {com.github.clj-easy/graal-build-time {:mvn/version "1.0.5"}}
+           :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}}}
