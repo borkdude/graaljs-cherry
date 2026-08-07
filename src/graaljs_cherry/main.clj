@@ -140,6 +140,24 @@
 (def ^:private bootstrap-js
   "(async function () {
      globalThis.cherry_repl_core = await import('cherry-cljs/cljs.core.js');
+     // graaljs console stringifies with ToString, which throws on
+     // null-prototype objects (e.g. module namespaces); fall back to the
+     // object's tag and keys
+     const safe = (x) => {
+       try { String(x); return x; }
+       catch (_e) {
+         const tag = Object.prototype.toString.call(x);
+         try {
+           const keys = Object.keys(x);
+           const shown = keys.slice(0, 20).join(', ');
+           return tag + ' {' + shown + (keys.length > 20 ? ', ...' : '') + '}';
+         } catch (_e2) { return tag; }
+       }
+     };
+     for (const m of ['log', 'info', 'warn', 'error', 'debug']) {
+       const orig = console[m];
+       if (orig) console[m] = (...args) => orig.apply(console, args.map(safe));
+     }
      return [undefined];
    })()")
 
@@ -179,11 +197,9 @@
 
 ;;;; REPL
 
-(defn repl [^Context ctx]
-  (let [core (bootstrap ctx)
-        pr-str* (.getMember core "pr_str")]
-    (loop [state nil
-           buf nil]
+(defn repl [^Context ctx ^Value pr-str*]
+  (loop [state nil
+         buf nil]
       (let [current-ns (:ns state "user")]
         (print (if buf "      " (str current-ns "=> ")))
         (flush)
@@ -213,10 +229,42 @@
                         (println "error:" (if (instance? Value v)
                                             (error->str ctx v)
                                             (str v))))
-                      (recur new-state nil))))))))))))
+                      (recur new-state nil)))))))))))
 
-(defn -main [& _args]
-  (println "Cherry GraalJS REPL, Ctrl-D to exit")
+(defn eval-once
+  "Eval one expression; prn the result when non-nil. Returns an exit code."
+  [^Context ctx ^Value pr-str* ^String code]
+  (let [[_ js] (try (compile-form nil code)
+                    (catch Exception e
+                      (binding [*out* *err*]
+                        (println "compile error:" (ex-message e)))
+                      nil))]
+    (if-not js
+      1
+      (let [[status ^Value v] (try (eval-await ctx js)
+                                   (catch PolyglotException e
+                                     [:err (.getMessage e)]))]
+        (if (= :ok status)
+          (let [v (.getArrayElement v 0)]
+            (when-not (.isNull v)
+              (println (.asString (.execute pr-str* (object-array [v])))))
+            0)
+          (binding [*out* *err*]
+            (println "error:" (if (instance? Value v)
+                                (error->str ctx v)
+                                (str v)))
+            1))))))
+
+(defn -main [& args]
   (with-open [ctx (make-context)]
-    (repl ctx))
+    (let [core (bootstrap ctx)
+          pr-str* (.getMember core "pr_str")]
+      (if (= "-e" (first args))
+        (if-let [code (second args)]
+          (System/exit (eval-once ctx pr-str* code))
+          (binding [*out* *err*]
+            (println "usage: graaljs-cherry [-e expr]")
+            (System/exit 1)))
+        (do (println "Cherry GraalJS REPL, Ctrl-D to exit")
+            (repl ctx pr-str*)))))
   (System/exit 0))
