@@ -24,7 +24,7 @@ clojure -M -m graaljs-cherry.main
 ./graaljs-cherry
 ```
 
-The image is around 101MB and includes the Truffle JIT, which compiles
+The image is around 105MB and includes the Truffle JIT, which compiles
 hot JS at runtime (a 10M iteration loop-recur runs in ~55ms vs ~2700ms
 interpreted). `./build-native.sh --small` builds a 49MB interpreter-only
 image instead.

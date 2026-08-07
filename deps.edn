@@ -1,6 +1,6 @@
 {:paths ["src"]
  :deps {org.clojure/clojure {:mvn/version "1.12.3"}
-        io.github.squint-cljs/cherry {:git/sha "ed4cf38d73af76c7201460a9c4f29011d5686535"}
+        io.github.squint-cljs/cherry {:git/sha "879f06d1472d92cd8330faafabbf41a4ce6f79fc"}
         org.graalvm.js/js-language {:mvn/version "25.0.2"}
         org.graalvm.truffle/truffle-runtime {:mvn/version "25.0.2"}}
  :aliases
