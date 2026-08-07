@@ -1,13 +1,16 @@
 {:paths ["src"]
  :deps {org.clojure/clojure {:mvn/version "1.12.3"}
-        io.github.squint-cljs/cherry {:git/sha "585c2fd164314c649344bd4a0eda4c078b2923e1"}
+        io.github.squint-cljs/cherry {:git/sha "ed4cf38d73af76c7201460a9c4f29011d5686535"}
         org.graalvm.js/js-language {:mvn/version "25.0.2"}
         org.graalvm.truffle/truffle-runtime {:mvn/version "25.0.2"}}
  :aliases
  {:native {:extra-paths ["classes"]
            :extra-deps {com.github.clj-easy/graal-build-time {:mvn/version "1.0.5"}}
-           ;; without truffle-runtime the image has no JIT for JS: smaller
-           ;; binary, interpreter-only speed
-           :classpath-overrides {org.graalvm.truffle/truffle-runtime nil
-                                 org.graalvm.truffle/truffle-compiler nil}
-           :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}}}
+           :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}
+  ;; like :native but without truffle-runtime: no JIT for JS, interpreter-only
+  ;; speed, roughly half the image size
+  :native-small {:extra-paths ["classes"]
+                 :extra-deps {com.github.clj-easy/graal-build-time {:mvn/version "1.0.5"}}
+                 :classpath-overrides {org.graalvm.truffle/truffle-runtime nil
+                                       org.graalvm.truffle/truffle-compiler nil}
+                 :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}}}

@@ -158,16 +158,19 @@
                   (= ::incomplete new-state) (recur state code)
                   (nil? new-state) (recur state nil)
                   :else
-                  (let [[status ^Value v]
-                        (try (eval-await ctx js)
-                             (catch PolyglotException e
-                               [:err (.getMessage e)]))]
-                    (if (= :ok status)
-                      (println (.asString (.execute pr-str* (object-array [(.getArrayElement v 0)]))))
-                      (println "error:" (if (instance? Value v)
-                                          (error->str ctx v)
-                                          (str v))))
-                    (recur new-state nil)))))))))))
+                  (do
+                    (when (System/getenv "CHERRY_PRINT_JS")
+                      (println js))
+                    (let [[status ^Value v]
+                          (try (eval-await ctx js)
+                               (catch PolyglotException e
+                                 [:err (.getMessage e)]))]
+                      (if (= :ok status)
+                        (println (.asString (.execute pr-str* (object-array [(.getArrayElement v 0)]))))
+                        (println "error:" (if (instance? Value v)
+                                            (error->str ctx v)
+                                            (str v))))
+                      (recur new-state nil))))))))))))
 
 (defn -main [& _args]
   (println "Cherry GraalJS REPL, Ctrl-D to exit")
