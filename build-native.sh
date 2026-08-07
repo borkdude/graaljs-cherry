@@ -11,6 +11,7 @@ native-image \
   -cp "$(clojure -Spath -A:native)" \
   --features=clj_easy.graal_build_time.InitClojureClasses \
   --no-fallback \
+  -Os \
   -J-Xmx8g \
   -o graaljs-cherry \
   graaljs_cherry.main

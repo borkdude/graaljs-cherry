@@ -6,4 +6,8 @@
  :aliases
  {:native {:extra-paths ["classes"]
            :extra-deps {com.github.clj-easy/graal-build-time {:mvn/version "1.0.5"}}
+           ;; without truffle-runtime the image has no JIT for JS: smaller
+           ;; binary, interpreter-only speed
+           :classpath-overrides {org.graalvm.truffle/truffle-runtime nil
+                                 org.graalvm.truffle/truffle-compiler nil}
            :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}}}

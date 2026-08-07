@@ -24,6 +24,11 @@ clojure -M -m graaljs-cherry.main
 ./graaljs-cherry
 ```
 
+The image is around 49MB. It excludes the optimizing Truffle runtime,
+so JS runs interpreted. To JIT-compile hot JS instead, remove the
+`:classpath-overrides` from the `:native` alias in `deps.edn`, at the
+cost of a roughly 100MB image.
+
 ```
 user=> (defn foo [x] (inc x))
 #object[foo]
